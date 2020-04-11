@@ -4,10 +4,10 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
 
-// Default Network Topology
+// Compression Network Topology
 //
-//       10.1.1.0
-// n0 -------------- n1
+//       10.1.1.0           10.1.1.0
+// n1 -------------- n2 -------------- n3 -------------- n4
 //    point-to-point
 //
  
@@ -34,13 +34,6 @@ main (int argc, char *argv[])
    NS_LOG_INFO ("Create nodes.");
    NodeContainer nodes;
    nodes.Create (4);
-
-  //  NS_LOG_INFO("Set node containter nodes 0 and 1");
-  //  NodeContainer n1 = NodeContainer (nodes.Get (0), nodes.Get (1));
-  //  NS_LOG_INFO("Set node containter nodes 1 and 2");
-  //  NodeContainer n2 = NodeContainer (nodes.Get (1), nodes.Get (2));
-  //  NS_LOG_INFO("Set node containter nodes 2 and 3");
-  //  NodeContainer n3 = NodeContainer (nodes.Get (2), nodes.Get (3));
 
 
   PointToPointHelper pointToPoint;
