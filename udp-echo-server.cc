@@ -32,7 +32,6 @@
 
 #include "udp-echo-server.h"
 
-int m_received = 0;
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("UdpEchoServerApplication");
@@ -132,8 +131,8 @@ UdpEchoServer::StartApplication (void)
         }
     }
 
-  m_socket->SetRecvCallback (MakeCallback (&UdpEchoServer::HandleRead, this, m_received));
-  m_socket6->SetRecvCallback (MakeCallback (&UdpEchoServer::HandleRead, this, m_received));
+  m_socket->SetRecvCallback (MakeCallback (&UdpEchoServer::HandleRead, this));
+  m_socket6->SetRecvCallback (MakeCallback (&UdpEchoServer::HandleRead, this));
 }
 
 void 
@@ -154,7 +153,7 @@ UdpEchoServer::StopApplication ()
 }
 
 void 
-UdpEchoServer::HandleRead (Ptr<Socket> socket, m_received)
+UdpEchoServer::HandleRead (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this << socket);
 
@@ -168,20 +167,18 @@ UdpEchoServer::HandleRead (Ptr<Socket> socket, m_received)
       m_rxTraceWithAddresses (packet, from, localAddress);
       if (InetSocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("Received Packet No.  " << m_received << " At time " << Simulator::Now ().GetSeconds () << "s server received " << packet->GetSize () << " bytes from " <<
+          NS_LOG_INFO (" At time " << Simulator::Now ().GetSeconds () << "s server received " << packet->GetSize () << " bytes from " <<
                        InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
                        InetSocketAddress::ConvertFrom (from).GetPort ());
-      			++m_received;
 	  		
 
         }
 
       else if (Inet6SocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("Received Packet No.  " << m_received << " At time " << Simulator::Now ().GetSeconds () << "s server received " << packet->GetSize () << " bytes from " <<
+          NS_LOG_INFO (" At time " << Simulator::Now ().GetSeconds () << "s server received " << packet->GetSize () << " bytes from " <<
                        Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port " <<
                        Inet6SocketAddress::ConvertFrom (from).GetPort ());
-     			++m_received;
 	  		
         }
 
@@ -193,18 +190,16 @@ UdpEchoServer::HandleRead (Ptr<Socket> socket, m_received)
 
       if (InetSocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("Received Packet No.  " << m_received << "At time " << Simulator::Now ().GetSeconds () << "s server sent " << packet->GetSize () << " bytes to " <<
+          NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s server sent " << packet->GetSize () << " bytes to " <<
                        InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
                        InetSocketAddress::ConvertFrom (from).GetPort ());
-     			++m_received;
 		  		
         }
       else if (Inet6SocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("Received Packet No.  " << m_received << "At time " << Simulator::Now ().GetSeconds () << "s server sent " << packet->GetSize () << " bytes to " <<
+          NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s server sent " << packet->GetSize () << " bytes to " <<
                        Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port " <<
                        Inet6SocketAddress::ConvertFrom (from).GetPort ());
-      			++m_received;
 	  		
         }
     }

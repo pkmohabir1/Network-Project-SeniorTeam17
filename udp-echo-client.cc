@@ -126,7 +126,7 @@ UdpEchoClient::DoDispose (void)
 }
 
 void 
-UdpEchoClient::StartApplication (src_peerPort)
+UdpEchoClient::StartApplication (void)
 {
   NS_LOG_FUNCTION (this);
 
@@ -140,7 +140,7 @@ UdpEchoClient::StartApplication (src_peerPort)
             {
               NS_FATAL_ERROR ("Failed to bind socket");
             }
-          m_socket->Connect (InetSocketAddress (Ipv4Address::ConvertFrom(m_peerAddress), src_peerPort));
+          m_socket->Connect (InetSocketAddress (Ipv4Address::ConvertFrom(m_peerAddress), m_peerPort));
         }
       else if (Ipv6Address::IsMatchingType(m_peerAddress) == true)
         {

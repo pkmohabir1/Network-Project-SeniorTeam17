@@ -193,7 +193,7 @@ main (int argc, char *argv[])
   AsciiTraceHelper ascii;
  
   if(run_sim){
-
+  // networkComp1::startTCPConnection();
    int dstPort = std::stoi(testingMap.at("dst_port_udp"), nullptr, 10);
 
    int payloadSize = std::stoi(testingMap.at("payload_sz"), nullptr, 10);
@@ -282,6 +282,7 @@ main (int argc, char *argv[])
     clientApps.Start(Seconds (2.0));
     clientApps.Stop(Seconds (7.0));
 
+    //startTCPConnection again?
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
     Simulator::Stop(Seconds (30));
