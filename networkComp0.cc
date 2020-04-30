@@ -3,154 +3,34 @@
 #include "ns3/internet-module.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
+#include "ns3/ipv4-global-routing-helper.h"
+#include "ns3/csma-module.h"
+
+
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <map>
 #include <iterator>
+#include <algorithm>
+#include <cctype>
 
 bool run_sim = false;
+bool log_flag = false;
 
-void print_map(std::map<std::string, std::string> &testing_map){
-  std::map<std::string, std::string>::iterator itr;
-  int i = 1;
-  for(itr = testing_map.begin(); itr != testing_map.end(); ++itr){
-    std::cout << i << ". " << itr->first << " = " << itr->second<< "\n";
-    i++;
-  }
-}
-
-void print_menu(std::map<std::string, std::string> &testing_map){
-
-  std::cout <<"****************************************************\n";
-  std::cout << " \tNetwork Compression Detection Portal\n";
-  std::cout <<"****************************************************\n";
-  std::cout << " "<< "To update Testing Configuration(s) please enter\t\n";
-  std::cout << " "<< "the *ID Number* of the configuration item\t\n";
-  std::cout << " "<< "otherwise please enter RUN to run simulator\t\n";
-  std::cout << " "<< "with current Testing configurations\t\n";
-  std::cout <<"___________________________________________________\n";
-  std::cout << "Current Testing Configurations: \n\n";
-  print_map(testing_map);
-  std::cout <<"___________________________________________________\n";
-  std::cout << "Would you like to update a test configuration [YES] or [RUN] for Simulation:  ";
-
-  std::string update_menu;
-  std::cin >> update_menu;
-
-  while(update_menu == "YES" || update_menu == "RUN"){
-
-    if(update_menu == "YES"){
-
-      std::string id;
-      std::cout << "Please enter the test configuration ID: ";
-      std::cin >> id;
-
-      int configuration_id = std::stoi(id, nullptr, 10);
-
-      std::string value_change;
-
-      switch(configuration_id){
-
-        case 1:
-             
-              std::cout<<"Please enter numrial value for new dts_port_tcp_head:";
-              std::cin >> value_change;
-              testing_map["dst_port_tcp_head"] = value_change;
-              break;
-        case 2:
-           
-              std::cout<< "Please enter numrial value for new dts_port_tcp_tail:";
-              std::cin >> value_change;
-              testing_map["dst_port_tcp_tail"] = value_change;
-              
-              break;
-        case 3:
-           
-              std::cout<<"Please enter numrial value for new dts_port_tcp_udp:";
-              std::cin >> value_change;
-              testing_map["dst_port_udp"] = value_change;
-             
-              break;
-        case 4:
-             
-              std::cout<<"Please enter numrial value for new inter_measurement time:";
-              std::cin >> value_change;
-              testing_map["inter_measurement_time"]= value_change;
-             
-              break;
-        case 5:
-             
-              std::cout<<"Please enter numrial value for numbr of UDP Packets: ";
-              std::cin >> value_change;
-              testing_map["num_udp_packets"] = value_change;
-              break;
-            
-        case 6:
-              
-              std::cout<<"Please enter numrial value for new payload size:";
-              std::cin >> value_change;
-              testing_map["payload_sz"] = value_change;
-             
-              break;
-        case 7:
-           
-              std::cout<<"Please enter new Server IP: ";
-              std::cin >> value_change;
-              testing_map["server_ip"] = value_change;
-             
-        case 8:
-       
-              std::cout<<"Please enter numrial value for new source port UDP:";
-              std::cin >> value_change;
-              testing_map["src_port_udp"] = value_change;
-              break;
-        case 9:
-            
-              std::cout<<"Please enter numrial value for new TCP Probing port:";
-              std::cin >> value_change;
-              testing_map["tcp_probing_port"] = value_change;
-              break;
-        case 10:
-     
-              std::cout<<"Please enter numrial value for UDP TTL:";
-              std::cin >> value_change;
-              testing_map["udp_ttl"] = value_change;
-              break;
-        default:
-              std::cout << "ERROR INVALID CONFIGURATION ID";
-              break;
-
-      }
-
-      std::cout <<"___________________________________________________\n";
-      std::cout << "Testing Configurations: \n\n";
-      print_map(testing_map);
-      std::cout <<"___________________________________________________\n";
-
-     std::cout << "Continue to update a test configuration [YES] or [RUN] for Simulation: ";
-     std::cin >> update_menu;
-     std::cout<<"\n";
-
-    } 
-
-    if(update_menu == "RUN"){
-      std::cout <<"Simulation Test Results: \n";
-      std::cout <<"-----------------------\n";
-      std::cout << "\n";
-
-      run_sim = true;
-      return;
+bool is_digit(std::string s){
+  for(unsigned int i = 0; i < s.length(); i++){
+    if(isdigit(s[i]) == false){
+      return false;
     }
-
   }
+  return true;
 }
 
-void parseConfig(std::map<std::string, std::string> &testing_map, std::string configPath) {
+bool parseConfig(std::map<std::string, std::string> &testing_map, std::string config_path) {
 
-  std::string test = "./testing.ini";
-  std::ifstream inifile(configPath);
+  std::ifstream inifile(config_path);
 
   char c = '=';
 
@@ -170,12 +50,276 @@ void parseConfig(std::map<std::string, std::string> &testing_map, std::string co
       value = line.substr(equal_pos + 1, line.length());
       testing_map[key] = value;
     }
+    return true;
 
   }else{
-    std::cerr << "Coud not open file" << "\n";
+    std::cerr << "ERROR! Coud not open file ---> " << config_path<<"\n\nodes";
+    return false;
   }
+}
+
+void print_map(std::map<std::string, std::string> &testing_map){
+  std::map<std::string, std::string>::iterator itr;
+  int i = 1;
+  for(itr = testing_map.begin(); itr != testing_map.end(); ++itr){
+    std::cout << i << ". " << itr->first << " = " << itr->second<< "\n";
+    i++;
+  }
+}
+
+void modify_testing_config(std::map<std::string, std::string> &testing_map, int configuration_id){
+
+  std::string value_change;
+
+  switch(configuration_id){
+
+    case 1:
+          std::cout<<"Please enter numrial value for new Destination port (TCP HEAD):";
+          std::cin >> value_change;
+          while(is_digit(value_change) == false){
+            std::cout<<"ERROR! INVALID INPUT ---> "<< value_change <<"\n";
+            std::cout<<"Please enter numrial value for new Destination port (TCP HEAD):";
+            std::cin >> value_change;
+          }
+          testing_map["dst_port_tcp_head"] = value_change;
+          break;
+    case 2:
+          std::cout<< "Please enter numrial value for new Destination port (TCP Tail):";
+          std::cin >> value_change;
+          while(is_digit(value_change) == false){
+            std::cout<<"ERROR! INVALID INPUT ---> "<< value_change <<"\n";
+            std::cout<<"Please enter numrial value for new Destination port (TCP Tail):";
+            std::cin >> value_change;
+          }
+          testing_map["dst_port_tcp_tail"] = value_change;
+          
+          break;
+    case 3:
+          std::cout<<"Please enter numrial value for new Destination port (UDP):";
+          std::cin >> value_change;
+          while(is_digit(value_change) == false){
+            std::cout<<"ERROR! INVALID INPUT ---> "<< value_change <<"\n";
+            std::cout<<"Please enter numrial value for new Destination port (UDP):";
+            std::cin >> value_change;
+          }
+          testing_map["dst_port_udp"] = value_change;
+         
+          break;
+    case 4:
+          std::cout<<"Please enter numrial value for new Intermeasurement Time:";
+          std::cin >> value_change;
+          while(is_digit(value_change) == false){
+            std::cout<<"ERROR! INVALID INPUT ---> "<< value_change <<"\n";
+            std::cout<<"Please enter numrial value for new Intermeasurement Time:";
+            std::cin >> value_change;
+          }
+          testing_map["inter_measurement_time"]= value_change;
+         
+          break;
+    case 5:
+          std::cout<<"Please enter numrial value for number of UDP Packets: ";
+          std::cin >> value_change;
+          while(is_digit(value_change) == false){
+            std::cout<<"ERROR! INVALID INPUT ---> "<< value_change <<"\n";
+            std::cout<<"Please enter numrial value for number of UDP Packets:";
+            std::cin >> value_change;
+          }
+          testing_map["num_udp_packets"] = value_change;
+          break;
+        
+    case 6:            
+          std::cout<<"Please enter numrial value for new Payload size:";
+          std::cin >> value_change;
+          while(is_digit(value_change) == false){
+            std::cout<<"ERROR! INVALID INPUT ---> "<< value_change <<"\n";
+            std::cout<<"Please enter numrial value for new Payload size:";
+            std::cin >> value_change;
+          }
+          testing_map["payload_sz"] = value_change;
+         
+          break;
+    case 7:         
+          std::cout<<"Please enter new Server IP: ";
+          std::cin >> value_change;
+          testing_map["server_ip"] = value_change;
+         
+    case 8:
+          std::cout<<"Please enter numrial value for new source port (UDP):";
+          std::cin >> value_change;
+          while(is_digit(value_change) == false){
+            std::cout<<"ERROR! INVALID INPUT ---> "<< value_change <<"\n";
+            std::cout<<"Please enter numrial value for new source port (UDP):";
+            std::cin >> value_change;
+          }
+          testing_map["src_port_udp"] = value_change;
+          break;
+    case 9:
+          std::cout<<"Please enter numrial value for new TCP Probing port:";
+          std::cin >> value_change;
+          while(is_digit(value_change) == false){
+            std::cout<<"ERROR! INVALID INPUT ---> "<< value_change <<"\n";
+            std::cout<<"Please enter numrial value for new TCP Probing port:";
+            std::cin >> value_change;
+          }
+          testing_map["tcp_probing_port"] = value_change;
+          break;
+    case 10:
+          std::cout<<"Please enter numrial value for new UDP Time-to-live value:";
+          std::cin >> value_change;
+          while(is_digit(value_change) == false){
+            std::cout<<"ERROR! INVALID INPUT ---> "<< value_change <<"\n";
+            std::cout<<"Please enter numrial value for new UDP Time-to-live value:";
+            std::cin >> value_change;
+          }
+          testing_map["udp_ttl"] = value_change;
+          break;
+    default:
+          std::cout << "ERROR INVALID CONFIGURATION ID";
+          break;
+  }
+}
+
+void display_testing_file_option(std::map<std::string, std::string> &testing_map){
+  std::cout << "Please be sure to save testing config file in ns-3-dev directory\n";
+  std::cout << "Enter name of Testing config file. (Example ---> testing.ini): ";
+  std::string config_path;
+  std::cin >> config_path;
+  config_path = "./" + config_path;
+
+  bool parse_flag = parseConfig(testing_map, config_path);
+
+  while(!parse_flag){
+    std::cout << "Please make sure testing config file is saved in ns-3-dev directory\n";
+    std::cout << "Enter name of Testing config file. (Example ---> testing.ini): \n";
+    std::cin >> config_path;
+    config_path = "./" + config_path;
+    parse_flag = parseConfig(testing_map, config_path);
+  }
+  std::cout <<"_______________________________________________________________________\n";
 
 }
+
+void display_update_test_config(std::map<std::string, std::string> &testing_map){
+  std::cout <<"_______________________________________________________________________\n";
+
+  std::cout << " "<< "To update Testing Configuration(s) please enter\t\n";
+  std::cout << " "<< "the *ID Number* of the configuration item\t\n";
+  std::cout << " "<< "otherwise please enter RUN to run simulator\t\n";
+  std::cout << " "<< "with current Testing configurations\t\n";
+  std::cout <<"_______________________________________________________________________\n";
+
+  std::cout << "Current Testing Configurations: \n\n";
+  print_map(testing_map);
+  
+  std::cout << "\n";
+
+  std::cout << "To update a test configuration [YES] or [RUN] for Simulation:";
+
+  std::string update_menu;
+  std::cin >> update_menu;
+  std::cout << "\n";
+
+  std::transform(update_menu.begin(), update_menu.end(),update_menu.begin(), tolower);
+
+  while(update_menu != "yes" && update_menu != "run"){
+
+    std::cout << "ERROR! INVALID ENTRY ---> "<< update_menu <<"\n";
+    std::cout << "PLEASE enter [YES] to update Test configuration(s) or [RUN] for Simulation." << "\n";
+    std::cout << "Enter [YES]/[RUN]: ";
+    std::cin >> update_menu;
+    std::transform(update_menu.begin(), update_menu.end(),update_menu.begin(), tolower);
+
+  }
+
+  while(update_menu == "yes" || update_menu == "run"){
+
+    if(update_menu == "yes"){
+
+      std::string id;
+      std::cout << "Please enter the test configuration ID: ";
+      std::cin >> id;
+
+      int configuration_id = std::stoi(id);
+
+      modify_testing_config(testing_map, configuration_id);
+      std::cout <<"_______________________________________________________________________\n";
+
+      std::cout << "Testing Configurations: \n\n";
+      print_map(testing_map);
+      std::cout <<"_______________________________________________________________________\n";
+      std::cout << "Continue to update a test configuration [YES] or [RUN] for Simulation: ";
+      std::cin >> update_menu;
+      std::transform(update_menu.begin(), update_menu.end(),update_menu.begin(), tolower);
+      while(update_menu != "yes" && update_menu != "run"){
+
+        std::cout << "ERROR! INVALID ENTRY ---> "<< update_menu <<"\n";
+        std::cout << "PLEASE enter [YES] to update Test configuration(s) or [RUN] for Simulation." << "\n";
+        std::cout << "Enter [YES]/[RUN]: ";
+        std::cin >> update_menu;
+        std::transform(update_menu.begin(), update_menu.end(),update_menu.begin(), tolower);
+      }
+    } 
+
+    if(update_menu == "run"){
+      if(!log_flag){
+        std::cout << "\n";
+        std::cout <<"Simulation Test Results: \n";
+        std::cout <<"---------------------------------------------------------------------\n";
+        std::cout << "\n";
+      }else{
+        std::cout << "\n";
+        std::cout <<"Simulation Test Results Located in files: \n";
+        std::cout <<"---------------------------------------------------------------------\n";
+        std::cout << "ns-3-dev/pointToPoint_sim_results.tr  -->" << " For Node 0 and Node 1\n";
+        std::cout << "\n";
+        std::cout << "ns-3-dev/pointToPoint2_sim_results.tr -->" << " For Node 1 and Node 2\n";
+        std::cout << "\n";
+        std::cout << "ns-3-dev/pointToPoint3_sim_results.tr -->" << " For Node 2 and Node 3\n";
+        std::cout << "\n";
+      }
+
+      run_sim = true;
+      return;
+    }
+  }
+}
+
+void display_log_file_option(){
+
+  std::string log_file;
+
+  std::cout << "\n";
+  std::cout << "***The program allows offers to print Test Results onto an Ascii Trace file*** \n";
+  std::cout << "\n";
+  std::cout << "Please enter [Y] for test results to write to a .tr file or [n] for \n";
+  std::cout << "test result in shell Environment [Y]/[n]: ";
+  std::cin >> log_file;
+  std::transform(log_file.begin(), log_file.end(),log_file.begin(), tolower);
+
+  while(log_file != "y" && log_file != "n"){
+    std::cout << "ERROR! INVALID INPUT ---> "<< log_file << "\n";
+    std::cout << "Please enter [Y] for test results to write to a .tr file or [n] for \n";
+    std::cout << "test result in shell Environment [Y]/[n]: ";
+    std::cin >> log_file;
+    std::transform(log_file.begin(), log_file.end(),log_file.begin(), tolower);
+  }
+  if(log_file == "y"){
+    log_flag = true;
+  }
+  std::cout << "\n";
+}
+
+
+void print_menu(std::map<std::string, std::string> &testing_map){
+
+  std::cout <<"********************************************************************\n";
+  std::cout << "\t\tNetwork Compression Detection Portal\n";
+  std::cout <<"********************************************************************\n";
+  display_testing_file_option(testing_map);
+  display_log_file_option();
+  display_update_test_config(testing_map);
+}
+
 
 
 using namespace ns3;
@@ -188,41 +332,33 @@ main (int argc, char *argv[])
 
   std::map<std::string, std::string> testingMap;
 
-  parseConfig(testingMap, "./testing.ini");
   print_menu(testingMap);
   AsciiTraceHelper ascii;
+
  
   if(run_sim){
-  // networkComp1::startTCPConnection();
+
    int dstPort = std::stoi(testingMap.at("dst_port_udp"), nullptr, 10);
 
    int payloadSize = std::stoi(testingMap.at("payload_sz"), nullptr, 10);
 
     NS_LOG_INFO("Setting nPackets");
-   // uint32_t nPackets = std::stoi(testingMap.at("num_udp_packets"));
-    uint32_t nPackets = 2;
 
-
-
-    CommandLine cmd;
-    cmd.AddValue("nPackets", "Number of packets to echo", nPackets);
-    cmd.Parse (argc, argv);
+    uint32_t nPackets = std::stoi(testingMap.at("num_udp_packets"));
 
     Time::SetResolution (Time::NS);
-    LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
-    LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
-
-
+    if(!log_flag){
+      LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
+      LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
+    }
 
      NS_LOG_INFO ("Create nodes.");
      NodeContainer nodes;
+    
      nodes.Create (4);
-
+   
 
     PointToPointHelper pointToPoint;
-
-
-
 
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
     pointToPoint.SetChannelAttribute ("Delay", StringValue ("5ms"));
@@ -234,25 +370,26 @@ main (int argc, char *argv[])
 
     PointToPointHelper pointToPoint2;
 
-
     pointToPoint2.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
     pointToPoint2.SetChannelAttribute ("Delay", StringValue ("5ms"));
     NetDeviceContainer devices1;
     devices1 = pointToPoint2.Install (nodes.Get(1), nodes.Get(2));
 
-    pointToPoint2.EnableAsciiAll ("TestingResults.tr");
 
     PointToPointHelper pointToPoint3;
-
-
 
     pointToPoint3.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
     pointToPoint3.SetChannelAttribute ("Delay", StringValue ("5ms"));
     NetDeviceContainer devices2;
     devices2 = pointToPoint3.Install (nodes.Get(2), nodes.Get(3));
 
-    pointToPoint2.EnableAsciiAll ("TestingResults.tr");
 
+
+    if(log_flag){
+      pointToPoint.EnableAsciiAll (ascii.CreateFileStream ("pointToPoint_sim_results.tr"));
+      pointToPoint2.EnableAsciiAll (ascii.CreateFileStream ("pointToPoint2_sim_results.tr"));
+      pointToPoint3.EnableAsciiAll (ascii.CreateFileStream ("pointToPoint3_sim_results.tr"));
+    }
     InternetStackHelper stack;
     stack.Install (nodes);
 
@@ -282,7 +419,50 @@ main (int argc, char *argv[])
     clientApps.Start(Seconds (2.0));
     clientApps.Stop(Seconds (7.0));
 
-    //startTCPConnection again?
+
+  //_______________________________TCP_________________________________________
+
+  CsmaHelper csma;
+  csma.SetChannelAttribute ("DataRate", DataRateValue (DataRate (100 * 1000 * 1000)));
+  csma.SetChannelAttribute ("Delay", TimeValue (MicroSeconds (200)));
+
+  NodeContainer n;
+  n.Create (4);
+  NetDeviceContainer ethInterfaces = csma.Install (n);
+
+  InternetStackHelper internetStack;
+ 
+  internetStack.Install (n);
+  
+  Ipv4AddressHelper ipv4;
+
+  ipv4.SetBase ("10.0.5.0", "255.255.255.0");
+  Ipv4InterfaceContainer ipv4Interfaces = ipv4.Assign (ethInterfaces);
+
+  //Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+
+  uint16_t servPort = 8080;
+  PacketSinkHelper sinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), servPort));
+  // start a sink client on all nodes
+  ApplicationContainer sinkApp = sinkHelper.Install (n);
+  sinkApp.Start (Seconds (0));
+  sinkApp.Stop (Seconds (30.0));
+
+  // This tells every node on the network to start a flow to all other nodes on the network ...
+     
+          Address remoteAddress (InetSocketAddress (ipv4Interfaces.GetAddress (3), servPort));
+          OnOffHelper clientHelper ("ns3::TcpSocketFactory", remoteAddress);
+          clientHelper.SetAttribute 
+            ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
+          clientHelper.SetAttribute 
+            ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
+          ApplicationContainer tcp_clientApp = clientHelper.Install (n.Get (0));
+          tcp_clientApp.Start (Seconds (1.0)); /* delay startup depending on node number */
+          tcp_clientApp.Stop (Seconds (25.0));
+            
+
+  csma.EnablePcapAll ("neworkComp_tcp", false);
+//____________________________end_____________________________________________
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
     Simulator::Stop(Seconds (30));
@@ -296,4 +476,3 @@ main (int argc, char *argv[])
   }
   return 0;
 }
-
