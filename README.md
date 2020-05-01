@@ -19,7 +19,7 @@ This project aims to increase the security measures between network endpoints to
 
 ## To Configure
 ### Using Configuration File
-The simulation parameters can be modified by editing the ````testing.ini```` file as follows:
+The initial simulation parameters are configured via an INI file pointed to by the user specifying the path (relative to the top-level NS3 directory) on startup. Each line in the file specifies a single parameter in the format ```param_name=value```. All of the possible parameters are listed below:
  * ```server_ip```: Server IP address where packet trains will be sent
  * ```src_port_udp```: Source port for UDP packet trains
  * ```dst_port_udp```: Destination port for UDP packet trains
@@ -35,6 +35,10 @@ The simulation parameters can be modified by editing the ````testing.ini```` fil
 
 ### Using Program Menu
 Individual parameters can be changed via the menu interface within the program before running the simulation. The parameters and values work the same way as the INI file method.
+
+### Output and Logging
+The user is given the option to enable or disable console and trace file logging before running the simulation. If console logging is enabled the logfile locations will be given in the terminal after the simulation finishes running.
+
 
 ### Maintainers
 * Graham Hendry (gphendry) - gphendry@dons.usfca.edu
