@@ -18,6 +18,9 @@
 
 bool run_sim = false;
 bool log_flag = false;
+bool run_tests = false;
+
+NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
 
 bool is_digit(std::string s){
   for(unsigned int i = 0; i < s.length(); i++){
@@ -221,7 +224,7 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
 
   std::transform(update_menu.begin(), update_menu.end(),update_menu.begin(), tolower);
 
-  while(update_menu != "yes" && update_menu != "run"){
+  while(update_menu != "yes" && update_menu != "run" && update_menu != "test"){
 
     std::cout << "ERROR! INVALID ENTRY ---> "<< update_menu <<"\n";
     std::cout << "PLEASE enter [YES] to update Test configuration(s) or [RUN] for Simulation." << "\n";
@@ -231,7 +234,7 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
 
   }
 
-  while(update_menu == "yes" || update_menu == "run"){
+  while(update_menu == "yes" || update_menu == "run" || update_menu == "test"){
 
     if(update_menu == "yes"){
 
@@ -281,6 +284,12 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
       run_sim = true;
       return;
     }
+
+    if (update_menu == "test") {
+      run_tests = true;
+      std::cout << "Running Tests...";
+    }
+    
   }
 }
 
@@ -320,25 +329,11 @@ void print_menu(std::map<std::string, std::string> &testing_map){
   display_update_test_config(testing_map);
 }
 
-
-
-using namespace ns3;
-
-NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
-
-int
-main (int argc, char *argv[])
-{
-
-  std::map<std::string, std::string> testingMap;
-
-  print_menu(testingMap);
+void run_simulator(std::map<std::string, std::string> &testingMap, bool compression, bool long_distance) {
+  using namespace ns3;
+  // NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
   AsciiTraceHelper ascii;
-
- 
-  if(run_sim){
-
-   int dstPort = std::stoi(testingMap.at("dst_port_udp"), nullptr, 10);
+  int dstPort = std::stoi(testingMap.at("dst_port_udp"), nullptr, 10);
 
    int payloadSize = std::stoi(testingMap.at("payload_sz"), nullptr, 10);
 
@@ -439,6 +434,128 @@ main (int argc, char *argv[])
     Simulator::Destroy ();
 
     NS_LOG_INFO ("Done.");
+}
+
+
+
+using namespace ns3;
+
+// NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
+
+int
+main (int argc, char *argv[])
+{
+
+  std::map<std::string, std::string> testingMap;
+
+  print_menu(testingMap);
+  // AsciiTraceHelper ascii;
+
+ 
+  if(run_sim){
+    run_simulator(testingMap, false, false);
+
+//    int dstPort = std::stoi(testingMap.at("dst_port_udp"), nullptr, 10);
+
+//    int payloadSize = std::stoi(testingMap.at("payload_sz"), nullptr, 10);
+
+//    //int inter_measurement_time = std::stoi(testingMap.at("inter_measurement_time"), nullptr, 10);
+
+//     int inter_measurement_time =5;
+//     NS_LOG_INFO("Setting nPackets");
+
+//     //uint32_t nPackets = std::stoi(testingMap.at("num_udp_packets"));
+
+//     uint32_t nPackets = 9*2;
+
+//     Time::SetResolution (Time::NS);
+//     if(!log_flag){
+//       LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
+//       LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
+//     }
+
+//      NS_LOG_INFO ("Create nodes.");
+//      NodeContainer nodes;
+    
+//      nodes.Create (4);
+   
+
+//     PointToPointHelper pointToPoint;
+
+//     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
+//     pointToPoint.SetChannelAttribute ("Delay", StringValue ("5ms"));
+//     NetDeviceContainer devices;
+//     devices = pointToPoint.Install (nodes.Get(0), nodes.Get(1));
+
+//     pointToPoint.EnableAsciiAll (ascii.CreateFileStream ("TestingResults.tr"));
+
+
+//     PointToPointHelper pointToPoint2;
+
+//     pointToPoint2.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
+//     pointToPoint2.SetChannelAttribute ("Delay", StringValue ("5ms"));
+//     NetDeviceContainer devices1;
+//     devices1 = pointToPoint2.Install (nodes.Get(1), nodes.Get(2));
+
+//     PointToPointHelper pointToPoint3;
+
+//     pointToPoint3.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
+//     pointToPoint3.SetChannelAttribute ("Delay", StringValue ("5ms"));
+//     NetDeviceContainer devices2;
+//     devices2 = pointToPoint3.Install (nodes.Get(2), nodes.Get(3));
+
+//     if(log_flag){
+//       pointToPoint.EnableAsciiAll (ascii.CreateFileStream ("pointToPoint_sim_results.tr"));
+//       pointToPoint2.EnableAsciiAll (ascii.CreateFileStream ("pointToPoint2_sim_results.tr"));
+//       pointToPoint3.EnableAsciiAll (ascii.CreateFileStream ("pointToPoint3_sim_results.tr"));
+//     }
+//     InternetStackHelper stack;
+//     stack.Install (nodes);
+
+//     Ipv4AddressHelper address;
+
+//     address.SetBase ("10.1.1.0", "255.255.255.0");
+//     Ipv4InterfaceContainer interfaces0 = address.Assign (devices);
+
+//     address.SetBase ("10.1.2.0", "255.255.255.0");
+//     Ipv4InterfaceContainer interfaces1 = address.Assign (devices1);
+
+//     address.SetBase ("10.1.3.0", "255.255.255.0");
+//     Ipv4InterfaceContainer interfaces2 = address.Assign (devices2);
+
+//     UdpEchoServerHelper echoServer (dstPort);
+//     echoServer.SetAttribute ("MaxPackets", UintegerValue (nPackets));
+
+//     ApplicationContainer serverApps = echoServer.Install (nodes.Get(3));
+//     serverApps.Start (Seconds (1.0));
+//     serverApps.Stop (Seconds (300));
+    
+
+//     UdpEchoClientHelper echoClient (interfaces2.GetAddress (1), dstPort);
+//     echoClient.SetAttribute ("MaxPackets", UintegerValue (nPackets));
+//     echoClient.SetAttribute ("Interval", TimeValue (Seconds (0.0)));
+//     echoClient.SetAttribute ("PacketSize", UintegerValue (payloadSize));
+//     echoClient.SetAttribute("inter_measurement_time", UintegerValue(inter_measurement_time));
+
+//     ApplicationContainer clientApps = echoClient.Install (nodes.Get(0));
+//     clientApps.Start(Seconds (2.0));
+//     clientApps.Stop(Seconds (55.0));
+   
+
+
+// //____________________________end_____________________________________________
+//     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+
+//     Simulator::Stop(Seconds (320));
+
+//     NS_LOG_INFO ("Run Simulation.");
+
+//     Simulator::Run ();
+
+
+//     Simulator::Destroy ();
+
+//     NS_LOG_INFO ("Done.");
   }
   return 0;
 }
