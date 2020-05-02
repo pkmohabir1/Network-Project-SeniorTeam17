@@ -409,10 +409,9 @@ UdpEchoClient::Send (void)
   if (m_sent < m_count) 
     {
       if(m_sent == (m_count/2)){
-        NS_LOG_INFO ("SLEEP");
+        NS_LOG_INFO ("Waiting " << m_imt << " seconds Inter-Measurement Time...");
         sleep(m_imt);
-
-        NS_LOG_INFO ("START");
+        NS_LOG_INFO("Sending High-Entropy Packet Train...");
       }
       ScheduleTransmit (m_interval);
     }
@@ -429,15 +428,15 @@ UdpEchoClient::HandleRead (Ptr<Socket> socket)
     {
       if (InetSocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " <<
-                       InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
-                       InetSocketAddress::ConvertFrom (from).GetPort ());
+          // NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " <<
+          //              InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
+          //              InetSocketAddress::ConvertFrom (from).GetPort ());
         }
       else if (Inet6SocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " <<
-                       Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port " <<
-                       Inet6SocketAddress::ConvertFrom (from).GetPort ());
+          // NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " <<
+          //              Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port " <<
+          //              Inet6SocketAddress::ConvertFrom (from).GetPort ());
         }
       socket->GetSockName (localAddress);
       m_rxTrace (packet);

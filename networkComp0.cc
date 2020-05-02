@@ -216,7 +216,7 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
   
   std::cout << "\n";
 
-  std::cout << "To update a test configuration enter [YES], [RUN] for Simulation, [TEST] for Test Cases:";
+  std::cout << "To update a test configuration enter [YES], [RUN] for Simulation, [TEST] for Test Cases: ";
 
   std::string update_menu;
   std::cin >> update_menu;
@@ -354,7 +354,7 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
    //int inter_measurement_time = std::stoi(testingMap.at("inter_measurement_time"), nullptr, 10);
 
     int inter_measurement_time =5;
-    NS_LOG_INFO("Setting nPackets");
+    // NS_LOG_INFO("Setting nPackets");
 
     //uint32_t nPackets = std::stoi(testingMap.at("num_udp_packets"));
 
@@ -366,7 +366,7 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
       LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
     }
 
-     NS_LOG_INFO ("Create nodes.");
+     NS_LOG_INFO ("Creating nodes...");
      NodeContainer nodes;
     
      nodes.Create (4);
@@ -440,14 +440,16 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
 
     Simulator::Stop(Seconds (320));
 
-    NS_LOG_INFO ("Run Simulation.");
+    NS_LOG_INFO ("Starting Simulation...");
+
+    NS_LOG_INFO("Sending Low-Entropy Packet Train...");
 
     Simulator::Run ();
 
 
     Simulator::Destroy ();
 
-    NS_LOG_INFO ("Done.");
+    NS_LOG_INFO ("Simulation Finished.\n");
 }
 
 
@@ -576,13 +578,13 @@ main (int argc, char *argv[])
   }
 
   if ((run_sim == false) && (run_tests == true)) {
-    NS_LOG_INFO("Running No Compressing/Short Distance Test...");
+    // NS_LOG_INFO("Running No Compressing/Short Distance Test...");
     run_simulator(testingMap, false, false);
-    NS_LOG_INFO( "Running No Compressing/Long Distance Test...");
+    // NS_LOG_INFO( "Running No Compressing/Long Distance Test...");
     run_simulator(testingMap, false, true);
-    NS_LOG_INFO( "Running Has Compressing/Short Distance Test...");
+    // NS_LOG_INFO( "Running Has Compressing/Short Distance Test...");
     run_simulator(testingMap, true, false);
-    NS_LOG_INFO( "Running Has Compressing/Long Distance Test...");
+    // NS_LOG_INFO( "Running Has Compressing/Long Distance Test...");
     run_simulator(testingMap, true, true);
   }
   
