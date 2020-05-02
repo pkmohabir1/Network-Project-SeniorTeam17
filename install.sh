@@ -13,6 +13,8 @@ cp ./testing.ini ../
 echo "Copying modified UDP client/server files..."
 cp ./udp-echo-client.cc $model
 cp ./udp-echo-server.cc $model
+cp ./udp-echo-client.h $model
+cp ./udp-echo-server.h $model
 
 # TODO: Uncomment this when we figure out how to instantiate the TCP client/server properly
 # echo "Copying TCP client/server files..."
