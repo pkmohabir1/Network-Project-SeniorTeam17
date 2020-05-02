@@ -49,6 +49,11 @@ UdpEchoServer::GetTypeId (void)
                    UintegerValue (9),
                    MakeUintegerAccessor (&UdpEchoServer::m_port),
                    MakeUintegerChecker<uint16_t> ())
+    .AddAttribute ("MaxPackets", 
+                   "The maximum number of packets the application will receive.",
+                   UintegerValue (100),
+                   MakeUintegerAccessor (&UdpEchoServer::m_count),
+                   MakeUintegerChecker<uint32_t> ())
     .AddTraceSource ("Rx", "A packet has been received",
                      MakeTraceSourceAccessor (&UdpEchoServer::m_rxTrace),
                      "ns3::Packet::TracedCallback")
@@ -62,13 +67,27 @@ UdpEchoServer::GetTypeId (void)
 UdpEchoServer::UdpEchoServer ()
 {
   NS_LOG_FUNCTION (this);
+  m_rec = 0;
+  m_count = 0;
+
+  low_ent_start = 0;
+  low_ent_end = 0;
+  high_ent_start = 0;
+  high_ent_end = 0;
+
+  difference_low = 0;
+  difference_high = 0;
+  difference = 0;
+
+
+
 }
+
 UdpEchoServer::~UdpEchoServer()
 {
   NS_LOG_FUNCTION (this);
   m_socket = 0;
   m_socket6 = 0;
-  
 }
 
 void
@@ -160,26 +179,68 @@ UdpEchoServer::HandleRead (Ptr<Socket> socket)
   Ptr<Packet> packet;
   Address from;
   Address localAddress;
+
+
   while ((packet = socket->RecvFrom (from)))
     {
       socket->GetSockName (localAddress);
       m_rxTrace (packet);
       m_rxTraceWithAddresses (packet, from, localAddress);
+
+     
+
+     m_rec++;
+    if(m_rec == 1){
+      low_ent_start = Simulator::Now().GetMilliSeconds();
+      NS_LOG_INFO("Low Entropy Start ---> " << low_ent_start << "Packet Number ---> " << m_rec);
+    }
+    if(m_rec == (m_count/2)){
+      low_ent_end = Simulator::Now().GetMilliSeconds();
+      NS_LOG_INFO("Low Entropy End ---> " << low_ent_end << "Packet Number ---> " << m_rec);
+
+    }
+    if(m_rec == ((m_count/2)+1)){
+      high_ent_start = Simulator::Now().GetMilliSeconds();
+      NS_LOG_INFO("High Entropy Start ---> " << high_ent_start << "Packet Number ---> " << m_rec);
+    }
+    if(m_rec == m_count){
+      high_ent_end = Simulator::Now().GetMilliSeconds();
+      NS_LOG_INFO("High Entropy End ---> " << high_ent_end << "Packet Number ---> " << m_rec);
+      //difference calculation
+      difference_low = low_ent_end - low_ent_start;
+      NS_LOG_INFO(" Low Difference ---> " << difference_low);
+
+      difference_high = high_ent_end - high_ent_start;
+      NS_LOG_INFO(" High Difference ---> " << difference_high);
+
+      difference = difference_high - difference_low;
+      NS_LOG_INFO("High and Low Difference ---> " << difference);
+      if(difference > 100){
+        NS_LOG_INFO("COMPRESSION DETECTED");
+      }else{
+        NS_LOG_INFO("COMPRESSION NOT DETECTED");
+      }
+    }
+
+
+
+
+
+
+
+     NS_LOG_INFO("Packet received ---> " << m_rec);
+
       if (InetSocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO (" At time " << Simulator::Now ().GetSeconds () << "s server received " << packet->GetSize () << " bytes from " <<
+          NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s server received " << packet->GetSize () << " bytes from " <<
                        InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
                        InetSocketAddress::ConvertFrom (from).GetPort ());
-	  		
-
         }
-
       else if (Inet6SocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO (" At time " << Simulator::Now ().GetSeconds () << "s server received " << packet->GetSize () << " bytes from " <<
+          NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s server received " << packet->GetSize () << " bytes from " <<
                        Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port " <<
                        Inet6SocketAddress::ConvertFrom (from).GetPort ());
-	  		
         }
 
       packet->RemoveAllPacketTags ();
@@ -193,14 +254,12 @@ UdpEchoServer::HandleRead (Ptr<Socket> socket)
           NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s server sent " << packet->GetSize () << " bytes to " <<
                        InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
                        InetSocketAddress::ConvertFrom (from).GetPort ());
-		  		
         }
       else if (Inet6SocketAddress::IsMatchingType (from))
         {
           NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s server sent " << packet->GetSize () << " bytes to " <<
                        Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port " <<
                        Inet6SocketAddress::ConvertFrom (from).GetPort ());
-	  		
         }
     }
 }

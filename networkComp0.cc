@@ -7,7 +7,7 @@
 #include "ns3/csma-module.h"
 
 
-
+#include <unistd.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -342,9 +342,14 @@ main (int argc, char *argv[])
 
    int payloadSize = std::stoi(testingMap.at("payload_sz"), nullptr, 10);
 
+   //int inter_measurement_time = std::stoi(testingMap.at("inter_measurement_time"), nullptr, 10);
+
+    int inter_measurement_time =5;
     NS_LOG_INFO("Setting nPackets");
 
-    uint32_t nPackets = std::stoi(testingMap.at("num_udp_packets"));
+    //uint32_t nPackets = std::stoi(testingMap.at("num_udp_packets"));
+
+    uint32_t nPackets = 9*2;
 
     Time::SetResolution (Time::NS);
     if(!log_flag){
@@ -375,15 +380,12 @@ main (int argc, char *argv[])
     NetDeviceContainer devices1;
     devices1 = pointToPoint2.Install (nodes.Get(1), nodes.Get(2));
 
-
     PointToPointHelper pointToPoint3;
 
     pointToPoint3.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
     pointToPoint3.SetChannelAttribute ("Delay", StringValue ("5ms"));
     NetDeviceContainer devices2;
     devices2 = pointToPoint3.Install (nodes.Get(2), nodes.Get(3));
-
-
 
     if(log_flag){
       pointToPoint.EnableAsciiAll (ascii.CreateFileStream ("pointToPoint_sim_results.tr"));
@@ -405,71 +407,35 @@ main (int argc, char *argv[])
     Ipv4InterfaceContainer interfaces2 = address.Assign (devices2);
 
     UdpEchoServerHelper echoServer (dstPort);
+    echoServer.SetAttribute ("MaxPackets", UintegerValue (nPackets));
 
     ApplicationContainer serverApps = echoServer.Install (nodes.Get(3));
     serverApps.Start (Seconds (1.0));
-    serverApps.Stop (Seconds (10.0));
+    serverApps.Stop (Seconds (300));
+    
 
     UdpEchoClientHelper echoClient (interfaces2.GetAddress (1), dstPort);
     echoClient.SetAttribute ("MaxPackets", UintegerValue (nPackets));
-    echoClient.SetAttribute ("Interval", TimeValue (Seconds (1.0)));
+    echoClient.SetAttribute ("Interval", TimeValue (Seconds (0.0)));
     echoClient.SetAttribute ("PacketSize", UintegerValue (payloadSize));
+    echoClient.SetAttribute("inter_measurement_time", UintegerValue(inter_measurement_time));
 
     ApplicationContainer clientApps = echoClient.Install (nodes.Get(0));
     clientApps.Start(Seconds (2.0));
-    clientApps.Stop(Seconds (7.0));
+    clientApps.Stop(Seconds (55.0));
+   
 
 
-  //_______________________________TCP_________________________________________
-
-  CsmaHelper csma;
-  csma.SetChannelAttribute ("DataRate", DataRateValue (DataRate (100 * 1000 * 1000)));
-  csma.SetChannelAttribute ("Delay", TimeValue (MicroSeconds (200)));
-
-  NodeContainer n;
-  n.Create (4);
-  NetDeviceContainer ethInterfaces = csma.Install (n);
-
-  InternetStackHelper internetStack;
- 
-  internetStack.Install (n);
-  
-  Ipv4AddressHelper ipv4;
-
-  ipv4.SetBase ("10.0.5.0", "255.255.255.0");
-  Ipv4InterfaceContainer ipv4Interfaces = ipv4.Assign (ethInterfaces);
-
-  //Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-
-  uint16_t servPort = 8080;
-  PacketSinkHelper sinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), servPort));
-  // start a sink client on all nodes
-  ApplicationContainer sinkApp = sinkHelper.Install (n);
-  sinkApp.Start (Seconds (0));
-  sinkApp.Stop (Seconds (30.0));
-
-  // This tells every node on the network to start a flow to all other nodes on the network ...
-     
-          Address remoteAddress (InetSocketAddress (ipv4Interfaces.GetAddress (3), servPort));
-          OnOffHelper clientHelper ("ns3::TcpSocketFactory", remoteAddress);
-          clientHelper.SetAttribute 
-            ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
-          clientHelper.SetAttribute 
-            ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
-          ApplicationContainer tcp_clientApp = clientHelper.Install (n.Get (0));
-          tcp_clientApp.Start (Seconds (1.0)); /* delay startup depending on node number */
-          tcp_clientApp.Stop (Seconds (25.0));
-            
-
-  csma.EnablePcapAll ("neworkComp_tcp", false);
 //____________________________end_____________________________________________
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
-    Simulator::Stop(Seconds (30));
+    Simulator::Stop(Seconds (320));
 
     NS_LOG_INFO ("Run Simulation.");
 
     Simulator::Run ();
+
+
     Simulator::Destroy ();
 
     NS_LOG_INFO ("Done.");

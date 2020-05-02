@@ -29,6 +29,8 @@
 #include "ns3/trace-source-accessor.h"
 #include "udp-echo-client.h"
 
+#include <unistd.h>
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("UdpEchoClientApplication");
@@ -67,6 +69,10 @@ UdpEchoClient::GetTypeId (void)
                    MakeUintegerAccessor (&UdpEchoClient::SetDataSize,
                                          &UdpEchoClient::GetDataSize),
                    MakeUintegerChecker<uint32_t> ())
+    .AddAttribute("inter_measurement_time", "set intermeasurment time", 
+                   UintegerValue(15),
+                   MakeUintegerAccessor (&UdpEchoClient::m_imt),
+                   MakeUintegerChecker<uint16_t> ())
     .AddTraceSource ("Tx", "A new packet is created and is sent",
                      MakeTraceSourceAccessor (&UdpEchoClient::m_txTrace),
                      "ns3::Packet::TracedCallback")
@@ -91,6 +97,7 @@ UdpEchoClient::UdpEchoClient ()
   m_sendEvent = EventId ();
   m_data = 0;
   m_dataSize = 0;
+  m_imt = 0;
 }
 
 UdpEchoClient::~UdpEchoClient()
@@ -203,8 +210,13 @@ UdpEchoClient::SetDataSize (uint32_t dataSize)
   // neither will we.
   //
   delete [] m_data;
-  m_data = 0;
+
+  
+
+  m_data =0;
+
   m_dataSize = 0;
+
   m_size = dataSize;
 }
 
@@ -302,6 +314,15 @@ UdpEchoClient::ScheduleTransmit (Time dt)
   m_sendEvent = Simulator::Schedule (dt, &UdpEchoClient::Send, this);
 }
 
+void
+UdpEchoClient::set_low_entropy(uint8_t *payload_arr)
+{
+
+  for(unsigned int i = 0; i< m_dataSize; i++){
+    payload_arr[i] = 1;
+  }
+}
+
 void 
 UdpEchoClient::Send (void)
 {
@@ -320,7 +341,10 @@ UdpEchoClient::Send (void)
       //
       NS_ASSERT_MSG (m_dataSize == m_size, "UdpEchoClient::Send(): m_size and m_dataSize inconsistent");
       NS_ASSERT_MSG (m_data, "UdpEchoClient::Send(): m_dataSize but no m_data");
-      p = Create<Packet> (m_data, m_dataSize);
+      
+  
+        p = Create<Packet> (m_data, m_dataSize);
+      
     }
   else
     {
@@ -349,29 +373,47 @@ UdpEchoClient::Send (void)
   m_socket->Send (p);
   ++m_sent;
 
+  int packet_num = m_sent;
+
+  if(m_sent > (m_count/2)){
+    packet_num = m_sent % (m_count/2);
+    if(packet_num == 0){
+      packet_num = m_count/2;
+    }
+  }
+
   if (Ipv4Address::IsMatchingType (m_peerAddress))
     {
-      NS_LOG_INFO ("Packet No.  " << m_sent << " At time " << Simulator::Now ().GetSeconds () << "s client sent " << m_size << " bytes to " <<
+
+      NS_LOG_INFO ("Packet No.  " << packet_num << " At time " << Simulator::Now ().GetSeconds () << "s client sent " << m_size << " bytes to " <<
                    Ipv4Address::ConvertFrom (m_peerAddress) << " port " << m_peerPort);
     }
   else if (Ipv6Address::IsMatchingType (m_peerAddress))
     {
-      NS_LOG_INFO ("Packet No.  " << m_sent << "At time " << Simulator::Now ().GetSeconds () << "s client sent " << m_size << " bytes to " <<
+      NS_LOG_INFO ("Packet No.  " << packet_num << "At time " << Simulator::Now ().GetSeconds () << "s client sent " << m_size << " bytes to " <<
                    Ipv6Address::ConvertFrom (m_peerAddress) << " port " << m_peerPort);
     }
   else if (InetSocketAddress::IsMatchingType (m_peerAddress))
     {
-      NS_LOG_INFO ("Packet No.  " << m_sent << "At time " << Simulator::Now ().GetSeconds () << "s client sent " << m_size << " bytes to " <<
+      NS_LOG_INFO ("Packet No.  " << packet_num << "At time " << Simulator::Now ().GetSeconds () << "s client sent " << m_size << " bytes to " <<
                    InetSocketAddress::ConvertFrom (m_peerAddress).GetIpv4 () << " port " << InetSocketAddress::ConvertFrom (m_peerAddress).GetPort ());
     }
   else if (Inet6SocketAddress::IsMatchingType (m_peerAddress))
     {
-      NS_LOG_INFO ("Packet No.  " << m_sent << "At time " << Simulator::Now ().GetSeconds () << "s client sent " << m_size << " bytes to " <<
+
+      NS_LOG_INFO ("Packet No.  " << packet_num << "At time " << Simulator::Now ().GetSeconds () << "s client sent " << m_size << " bytes to " <<
                    Inet6SocketAddress::ConvertFrom (m_peerAddress).GetIpv6 () << " port " << Inet6SocketAddress::ConvertFrom (m_peerAddress).GetPort ());
     }
 
+
   if (m_sent < m_count) 
     {
+      if(m_sent == (m_count/2)){
+        NS_LOG_INFO ("SLEEP");
+        sleep(m_imt);
+
+        NS_LOG_INFO ("START");
+      }
       ScheduleTransmit (m_interval);
     }
 }
