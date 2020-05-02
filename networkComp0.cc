@@ -56,7 +56,7 @@ bool parseConfig(std::map<std::string, std::string> &testing_map, std::string co
     return true;
 
   }else{
-    std::cerr << "ERROR! Coud not open file ---> " << config_path<<"\n\nodes";
+    std::cerr << "ERROR! Coud not open file ---> " << config_path<<"\n";
     return false;
   }
 }
@@ -193,7 +193,7 @@ void display_testing_file_option(std::map<std::string, std::string> &testing_map
 
   while(!parse_flag){
     std::cout << "Please make sure testing config file is saved in ns-3-dev directory\n";
-    std::cout << "Enter name of Testing config file. (Example ---> testing.ini): \n";
+    std::cout << "Enter name of Testing config file. (Example ---> testing.ini): ";
     std::cin >> config_path;
     config_path = "./" + config_path;
     parse_flag = parseConfig(testing_map, config_path);
@@ -216,7 +216,7 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
   
   std::cout << "\n";
 
-  std::cout << "To update a test configuration [YES] or [RUN] for Simulation:";
+  std::cout << "To update a test configuration enter [YES], [RUN] for Simulation, [TEST] for Test Cases:";
 
   std::string update_menu;
   std::cin >> update_menu;
@@ -288,6 +288,7 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
     if (update_menu == "test") {
       run_tests = true;
       std::cout << "Running Tests...";
+      return;
     }
     
   }
@@ -331,7 +332,20 @@ void print_menu(std::map<std::string, std::string> &testing_map){
 
 void run_simulator(std::map<std::string, std::string> &testingMap, bool compression, bool long_distance) {
   using namespace ns3;
-  // NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
+
+  if ((compression == false) && (long_distance == false)) {
+    NS_LOG_INFO("Running No Compression and Short Distance...");
+  }
+  if ((compression == false) && (long_distance == true)) {
+    NS_LOG_INFO("Running No Compression and Long Distance...");
+  }
+  if ((compression == true) && (long_distance == false)) {
+    NS_LOG_INFO("Running With Compression and Short Distance...");
+  }
+  if ((compression == true) && (long_distance == true)) {
+    NS_LOG_INFO("Running With Compression and Long Distance...");
+  }
+
   AsciiTraceHelper ascii;
   int dstPort = std::stoi(testingMap.at("dst_port_udp"), nullptr, 10);
 
@@ -346,7 +360,7 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
 
     uint32_t nPackets = 9*2;
 
-    Time::SetResolution (Time::NS);
+    // Time::SetResolution (Time::NS);
     if(!log_flag){
       LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
       LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
@@ -445,15 +459,18 @@ using namespace ns3;
 int
 main (int argc, char *argv[])
 {
+  LogComponentEnable ("FirstScriptExample", LOG_LEVEL_INFO);
 
   std::map<std::string, std::string> testingMap;
 
   print_menu(testingMap);
   // AsciiTraceHelper ascii;
 
+  Time::SetResolution (Time::NS);
  
-  if(run_sim){
+  if((run_sim == true) && (run_tests == false)){
     run_simulator(testingMap, false, false);
+    return 0;
 
 //    int dstPort = std::stoi(testingMap.at("dst_port_udp"), nullptr, 10);
 
@@ -557,5 +574,18 @@ main (int argc, char *argv[])
 
 //     NS_LOG_INFO ("Done.");
   }
+
+  if ((run_sim == false) && (run_tests == true)) {
+    NS_LOG_INFO("Running No Compressing/Short Distance Test...");
+    run_simulator(testingMap, false, false);
+    NS_LOG_INFO( "Running No Compressing/Long Distance Test...");
+    run_simulator(testingMap, false, true);
+    NS_LOG_INFO( "Running Has Compressing/Short Distance Test...");
+    run_simulator(testingMap, true, false);
+    NS_LOG_INFO( "Running Has Compressing/Long Distance Test...");
+    run_simulator(testingMap, true, true);
+  }
+  
+
   return 0;
 }
