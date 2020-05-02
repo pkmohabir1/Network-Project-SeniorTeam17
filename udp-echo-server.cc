@@ -54,6 +54,10 @@ UdpEchoServer::GetTypeId (void)
                    UintegerValue (100),
                    MakeUintegerAccessor (&UdpEchoServer::m_count),
                    MakeUintegerChecker<uint32_t> ())
+    .AddAttribute("full_logging", "display full log messages", 
+                   UintegerValue(0),
+                   MakeUintegerAccessor (&UdpEchoServer::m_logging),
+                   MakeUintegerChecker<uint16_t> ())
     .AddTraceSource ("Rx", "A packet has been received",
                      MakeTraceSourceAccessor (&UdpEchoServer::m_rxTrace),
                      "ns3::Packet::TracedCallback")
@@ -66,9 +70,10 @@ UdpEchoServer::GetTypeId (void)
 
 UdpEchoServer::UdpEchoServer ()
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
   m_rec = 0;
   m_count = 0;
+  m_logging = 0;
 
   low_ent_start = 0;
   low_ent_end = 0;
@@ -85,7 +90,7 @@ UdpEchoServer::UdpEchoServer ()
 
 UdpEchoServer::~UdpEchoServer()
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
   m_socket = 0;
   m_socket6 = 0;
 }
@@ -93,14 +98,14 @@ UdpEchoServer::~UdpEchoServer()
 void
 UdpEchoServer::DoDispose (void)
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
   Application::DoDispose ();
 }
 
 void 
 UdpEchoServer::StartApplication (void)
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
 
   if (m_socket == 0)
     {
@@ -157,7 +162,7 @@ UdpEchoServer::StartApplication (void)
 void 
 UdpEchoServer::StopApplication ()
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
 
   if (m_socket != 0) 
     {
@@ -174,7 +179,7 @@ UdpEchoServer::StopApplication ()
 void 
 UdpEchoServer::HandleRead (Ptr<Socket> socket)
 {
-  NS_LOG_FUNCTION (this << socket);
+  // NS_LOG_FUNCTION (this << socket);
 
   Ptr<Packet> packet;
   Address from;
@@ -242,7 +247,9 @@ UdpEchoServer::HandleRead (Ptr<Socket> socket)
           //              Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port " <<
           //              Inet6SocketAddress::ConvertFrom (from).GetPort ());
         }
-        NS_LOG_INFO("UDP Packet received by server ---> " << m_rec);
+        if (m_logging == true) {
+          NS_LOG_INFO("UDP Packet received by server ---> " << m_rec);
+        }
     }
     if(m_rec == m_count){
         high_ent_end = Simulator::Now().GetMilliSeconds();

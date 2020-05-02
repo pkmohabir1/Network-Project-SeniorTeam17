@@ -172,6 +172,7 @@ private:
   EventId m_sendEvent; //!< Event to send the next packet
         
   uint16_t m_imt;//!< Intermeasurment Time
+  uint16_t m_logging;//!< Logging enabled
 
   /// Callbacks for tracing the packet Tx events
   TracedCallback<Ptr<const Packet> > m_txTrace;

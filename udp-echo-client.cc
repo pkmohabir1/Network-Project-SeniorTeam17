@@ -73,6 +73,10 @@ UdpEchoClient::GetTypeId (void)
                    UintegerValue(15),
                    MakeUintegerAccessor (&UdpEchoClient::m_imt),
                    MakeUintegerChecker<uint16_t> ())
+    .AddAttribute("full_logging", "display full log messages", 
+                   UintegerValue(0),
+                   MakeUintegerAccessor (&UdpEchoClient::m_logging),
+                   MakeUintegerChecker<uint16_t> ())
     .AddTraceSource ("Tx", "A new packet is created and is sent",
                      MakeTraceSourceAccessor (&UdpEchoClient::m_txTrace),
                      "ns3::Packet::TracedCallback")
@@ -91,18 +95,19 @@ UdpEchoClient::GetTypeId (void)
 
 UdpEchoClient::UdpEchoClient ()
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
   m_sent = 0;
   m_socket = 0;
   m_sendEvent = EventId ();
   m_data = 0;
   m_dataSize = 0;
   m_imt = 0;
+  m_logging = 0;
 }
 
 UdpEchoClient::~UdpEchoClient()
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
   m_socket = 0;
 
   delete [] m_data;
@@ -113,7 +118,7 @@ UdpEchoClient::~UdpEchoClient()
 void 
 UdpEchoClient::SetRemote (Address ip, uint16_t port)
 {
-  NS_LOG_FUNCTION (this << ip << port);
+  // NS_LOG_FUNCTION (this << ip << port);
   m_peerAddress = ip;
   m_peerPort = port;
 }
@@ -121,21 +126,21 @@ UdpEchoClient::SetRemote (Address ip, uint16_t port)
 void 
 UdpEchoClient::SetRemote (Address addr)
 {
-  NS_LOG_FUNCTION (this << addr);
+  // NS_LOG_FUNCTION (this << addr);
   m_peerAddress = addr;
 }
 
 void
 UdpEchoClient::DoDispose (void)
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
   Application::DoDispose ();
 }
 
 void 
 UdpEchoClient::StartApplication (void)
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
 
   if (m_socket == 0)
     {
@@ -187,7 +192,7 @@ UdpEchoClient::StartApplication (void)
 void 
 UdpEchoClient::StopApplication ()
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
 
   if (m_socket != 0) 
     {
@@ -202,7 +207,7 @@ UdpEchoClient::StopApplication ()
 void 
 UdpEchoClient::SetDataSize (uint32_t dataSize)
 {
-  NS_LOG_FUNCTION (this << dataSize);
+  // NS_LOG_FUNCTION (this << dataSize);
 
   //
   // If the client is setting the echo packet data size this way, we infer
@@ -223,14 +228,14 @@ UdpEchoClient::SetDataSize (uint32_t dataSize)
 uint32_t 
 UdpEchoClient::GetDataSize (void) const
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
   return m_size;
 }
 
 void 
 UdpEchoClient::SetFill (std::string fill)
 {
-  NS_LOG_FUNCTION (this << fill);
+  // NS_LOG_FUNCTION (this << fill);
 
   uint32_t dataSize = fill.size () + 1;
 
@@ -252,7 +257,7 @@ UdpEchoClient::SetFill (std::string fill)
 void 
 UdpEchoClient::SetFill (uint8_t fill, uint32_t dataSize)
 {
-  NS_LOG_FUNCTION (this << fill << dataSize);
+  // NS_LOG_FUNCTION (this << fill << dataSize);
   if (dataSize != m_dataSize)
     {
       delete [] m_data;
@@ -271,7 +276,7 @@ UdpEchoClient::SetFill (uint8_t fill, uint32_t dataSize)
 void 
 UdpEchoClient::SetFill (uint8_t *fill, uint32_t fillSize, uint32_t dataSize)
 {
-  NS_LOG_FUNCTION (this << fill << fillSize << dataSize);
+  // NS_LOG_FUNCTION (this << fill << fillSize << dataSize);
   if (dataSize != m_dataSize)
     {
       delete [] m_data;
@@ -310,7 +315,7 @@ UdpEchoClient::SetFill (uint8_t *fill, uint32_t fillSize, uint32_t dataSize)
 void 
 UdpEchoClient::ScheduleTransmit (Time dt)
 {
-  NS_LOG_FUNCTION (this << dt);
+  // NS_LOG_FUNCTION (this << dt);
   m_sendEvent = Simulator::Schedule (dt, &UdpEchoClient::Send, this);
 }
 
@@ -326,7 +331,7 @@ UdpEchoClient::set_low_entropy(uint8_t *payload_arr)
 void 
 UdpEchoClient::Send (void)
 {
-  NS_LOG_FUNCTION (this);
+  // NS_LOG_FUNCTION (this);
 
   NS_ASSERT (m_sendEvent.IsExpired ());
 
@@ -382,7 +387,8 @@ UdpEchoClient::Send (void)
     }
   }
 
-  if (Ipv4Address::IsMatchingType (m_peerAddress))
+  if (m_logging == true) {
+    if (Ipv4Address::IsMatchingType (m_peerAddress))
     {
 
       NS_LOG_INFO ("Packet No.  " << packet_num << " At time " << Simulator::Now ().GetSeconds () << "s client sent " << m_size << " bytes to " <<
@@ -404,6 +410,7 @@ UdpEchoClient::Send (void)
       NS_LOG_INFO ("Packet No.  " << packet_num << "At time " << Simulator::Now ().GetSeconds () << "s client sent " << m_size << " bytes to " <<
                    Inet6SocketAddress::ConvertFrom (m_peerAddress).GetIpv6 () << " port " << Inet6SocketAddress::ConvertFrom (m_peerAddress).GetPort ());
     }
+  }
 
 
   if (m_sent < m_count) 
@@ -411,7 +418,7 @@ UdpEchoClient::Send (void)
       if(m_sent == (m_count/2)){
         NS_LOG_INFO ("Waiting " << m_imt << " seconds Inter-Measurement Time...");
         sleep(m_imt);
-        NS_LOG_INFO("Sending High-Entropy Packet Train...");
+        NS_LOG_INFO ("Sending High-Entropy Packet Train...");
       }
       ScheduleTransmit (m_interval);
     }
@@ -420,7 +427,7 @@ UdpEchoClient::Send (void)
 void
 UdpEchoClient::HandleRead (Ptr<Socket> socket)
 {
-  NS_LOG_FUNCTION (this << socket);
+  // NS_LOG_FUNCTION (this << socket);
   Ptr<Packet> packet;
   Address from;
   Address localAddress;
