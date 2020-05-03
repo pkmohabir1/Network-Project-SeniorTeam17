@@ -170,6 +170,7 @@ void modify_testing_config(std::map<std::string, std::string> &testing_map, int 
           std::cout<<"Please enter new Server IP: ";
           std::cin >> value_change;
           testing_map["server_ip"] = value_change;
+	  break;
          
     case 8:
           std::cout<<"Please enter numrial value for new source port (UDP):";
@@ -245,7 +246,8 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
   
   std::cout << "\n";
 
-  std::cout << "To update a test configuration enter [YES], [RUN] for Simulation, [TEST] for Test Cases: ";
+  std::cout << "To update a test configuration enter [YES], [RUN] for Simulation, [TEST] for Test Cases\n";
+  std::cout << "Enter [YES]/[RUN]/[TEST]: ";
 
   std::string update_menu;
   std::cin >> update_menu;
@@ -256,8 +258,8 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
   while(update_menu != "yes" && update_menu != "run" && update_menu != "test"){
 
     std::cout << "ERROR! INVALID ENTRY ---> "<< update_menu <<"\n";
-    std::cout << "PLEASE enter [YES] to update Test configuration(s) or [RUN] for Simulation." << "\n";
-    std::cout << "Enter [YES]/[RUN]: ";
+      std::cout << "To update a test configuration enter [YES], [RUN] for Simulation, [TEST] for Test Cases\n";
+    std::cout << "Enter [YES]/[RUN]/[TEST]: ";
     std::cin >> update_menu;
     std::transform(update_menu.begin(), update_menu.end(),update_menu.begin(), tolower);
 
@@ -278,16 +280,20 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
 
       std::cout << "Testing Configurations: \n\n";
       print_map(testing_map);
-      std::cout <<"_______________________________________________________________________\n";
-      std::cout << "Continue to update a test configuration [YES] or [RUN] for Simulation: ";
+      //std::cout <<"_______________________________________________________________________\n";
+        std::cout << "\n";
+      std::cout << "To update a test configuration enter [YES], [RUN] for Simulation, [TEST] for Test Cases\n";
+      std::cout << "Enter [YES]/[RUN]/[TEST]: ";
       std::cin >> update_menu;
+      std::cout << "\n";      
       std::transform(update_menu.begin(), update_menu.end(),update_menu.begin(), tolower);
-      while(update_menu != "yes" && update_menu != "run"){
+      while(update_menu != "yes" && update_menu != "run" && update_menu != "test"){
 
         std::cout << "ERROR! INVALID ENTRY ---> "<< update_menu <<"\n";
-        std::cout << "PLEASE enter [YES] to update Test configuration(s) or [RUN] for Simulation." << "\n";
-        std::cout << "Enter [YES]/[RUN]: ";
+        std::cout << "PLEASE enter [YES] to update Test configuration(s) or [RUN] for Simulation [TEST] for Test Cases" << "\n";
+        std::cout << "Enter [YES]/[RUN]/[TEST]: ";
         std::cin >> update_menu;
+	std::cout << "\n";	
         std::transform(update_menu.begin(), update_menu.end(),update_menu.begin(), tolower);
       }
     } 
@@ -402,8 +408,8 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
     NS_LOG_INFO("Running With Compression and Long Distance...");
   }
 
-  AsciiTraceHelper ascii;
-  int dstPort = std::stoi(testingMap.at("dst_port_udp"), nullptr, 10);
+   AsciiTraceHelper ascii;
+   int dstPort = std::stoi(testingMap.at("dst_port_udp"), nullptr, 10);
 
    int payloadSize = std::stoi(testingMap.at("payload_sz"), nullptr, 10);
 
@@ -470,6 +476,8 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
     InternetStackHelper stack;
     stack.Install (nodes);
 
+    Ipv4Address serverIP = Ipv4Address(testingMap.at("server_ip").c_str());
+
     Ipv4AddressHelper address;
 
     address.SetBase ("10.1.1.0", "255.255.255.0");
@@ -478,7 +486,8 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
     address.SetBase ("10.1.2.0", "255.255.255.0");
     Ipv4InterfaceContainer interfaces1 = address.Assign (devices1);
 
-    address.SetBase ("10.1.3.0", "255.255.255.0");
+   
+    address.SetBase (serverIP, "255.255.255.255");
     Ipv4InterfaceContainer interfaces2 = address.Assign (devices2);
 
     UdpEchoServerHelper echoServer (dstPort);
