@@ -77,6 +77,10 @@ UdpEchoClient::GetTypeId (void)
                    UintegerValue(0),
                    MakeUintegerAccessor (&UdpEchoClient::m_logging),
                    MakeUintegerChecker<uint16_t> ())
+    .AddAttribute("comp_link", "enable compression link", 
+                   UintegerValue(0),
+                   MakeUintegerAccessor (&UdpEchoClient::m_compression),
+                   MakeUintegerChecker<uint16_t> ())
     .AddTraceSource ("Tx", "A new packet is created and is sent",
                      MakeTraceSourceAccessor (&UdpEchoClient::m_txTrace),
                      "ns3::Packet::TracedCallback")
@@ -103,6 +107,7 @@ UdpEchoClient::UdpEchoClient ()
   m_dataSize = 0;
   m_imt = 0;
   m_logging = 0;
+  m_compression = 0;
 }
 
 UdpEchoClient::~UdpEchoClient()
@@ -384,6 +389,9 @@ UdpEchoClient::Send (void)
     packet_num = m_sent % (m_count/2);
     if(packet_num == 0){
       packet_num = m_count/2;
+    }
+    if (m_compression > 0) {
+      m_interval = ns3::Time(Seconds(0.2));
     }
   }
 

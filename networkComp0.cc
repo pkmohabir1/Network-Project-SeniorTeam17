@@ -487,7 +487,7 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
     Ipv4InterfaceContainer interfaces1 = address.Assign (devices1);
 
    
-    address.SetBase (serverIP, "255.255.255.255");
+    address.SetBase (serverIP, "255.255.255.0");
     Ipv4InterfaceContainer interfaces2 = address.Assign (devices2);
 
     UdpEchoServerHelper echoServer (dstPort);
@@ -505,6 +505,7 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
     echoClient.SetAttribute ("PacketSize", UintegerValue (payloadSize));
     echoClient.SetAttribute("inter_measurement_time", UintegerValue(inter_measurement_time));
     echoClient.SetAttribute("full_logging", UintegerValue(debug));
+    echoClient.SetAttribute("comp_link", UintegerValue(compression));
 
     ApplicationContainer clientApps = echoClient.Install (nodes.Get(0));
     clientApps.Start(Seconds (2.0));

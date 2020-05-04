@@ -173,6 +173,7 @@ private:
         
   uint16_t m_imt;//!< Intermeasurment Time
   uint16_t m_logging;//!< Logging enabled
+  uint16_t m_compression; //!< Compression enabled
 
   /// Callbacks for tracing the packet Tx events
   TracedCallback<Ptr<const Packet> > m_txTrace;
