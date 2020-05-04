@@ -394,18 +394,25 @@ void print_menu(std::map<std::string, std::string> &testing_map){
 
 void run_simulator(std::map<std::string, std::string> &testingMap, bool compression, bool long_distance) {
   using namespace ns3;
+  std::string distance_val;
+  std::string short_distance_str = "5ms";
+  std::string long_distance_str = "200ms";
 
   if ((compression == false) && (long_distance == false)) {
     NS_LOG_INFO("Running No Compression and Short Distance...");
+    distance_val = short_distance_str;
   }
   if ((compression == false) && (long_distance == true)) {
     NS_LOG_INFO("Running No Compression and Long Distance...");
+    distance_val = long_distance_str;
   }
   if ((compression == true) && (long_distance == false)) {
     NS_LOG_INFO("Running With Compression and Short Distance...");
+    distance_val = short_distance_str;
   }
   if ((compression == true) && (long_distance == true)) {
     NS_LOG_INFO("Running With Compression and Long Distance...");
+    distance_val = long_distance_str;
   }
 
    AsciiTraceHelper ascii;
@@ -446,6 +453,7 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
 
     PointToPointHelper pointToPoint;
 
+
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
     pointToPoint.SetChannelAttribute ("Delay", StringValue ("5ms"));
     NetDeviceContainer devices;
@@ -457,7 +465,7 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
     PointToPointHelper pointToPoint2;
 
     pointToPoint2.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
-    pointToPoint2.SetChannelAttribute ("Delay", StringValue ("5ms"));
+    pointToPoint2.SetChannelAttribute ("Delay", StringValue (distance_val));
     NetDeviceContainer devices1;
     devices1 = pointToPoint2.Install (nodes.Get(1), nodes.Get(2));
 
