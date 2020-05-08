@@ -99,7 +99,6 @@ UdpEchoClient::GetTypeId (void)
 
 UdpEchoClient::UdpEchoClient ()
 {
-  // NS_LOG_FUNCTION (this);
   m_sent = 0;
   m_socket = 0;
   m_sendEvent = EventId ();
@@ -112,7 +111,6 @@ UdpEchoClient::UdpEchoClient ()
 
 UdpEchoClient::~UdpEchoClient()
 {
-  // NS_LOG_FUNCTION (this);
   m_socket = 0;
 
   delete [] m_data;
@@ -123,7 +121,6 @@ UdpEchoClient::~UdpEchoClient()
 void 
 UdpEchoClient::SetRemote (Address ip, uint16_t port)
 {
-  // NS_LOG_FUNCTION (this << ip << port);
   m_peerAddress = ip;
   m_peerPort = port;
 }
@@ -131,21 +128,18 @@ UdpEchoClient::SetRemote (Address ip, uint16_t port)
 void 
 UdpEchoClient::SetRemote (Address addr)
 {
-  // NS_LOG_FUNCTION (this << addr);
   m_peerAddress = addr;
 }
 
 void
 UdpEchoClient::DoDispose (void)
 {
-  // NS_LOG_FUNCTION (this);
   Application::DoDispose ();
 }
 
 void 
 UdpEchoClient::StartApplication (void)
 {
-  // NS_LOG_FUNCTION (this);
 
   if (m_socket == 0)
     {
@@ -197,7 +191,6 @@ UdpEchoClient::StartApplication (void)
 void 
 UdpEchoClient::StopApplication ()
 {
-  // NS_LOG_FUNCTION (this);
 
   if (m_socket != 0) 
     {
@@ -212,7 +205,6 @@ UdpEchoClient::StopApplication ()
 void 
 UdpEchoClient::SetDataSize (uint32_t dataSize)
 {
-  // NS_LOG_FUNCTION (this << dataSize);
 
   //
   // If the client is setting the echo packet data size this way, we infer
@@ -220,8 +212,6 @@ UdpEchoClient::SetDataSize (uint32_t dataSize)
   // neither will we.
   //
   delete [] m_data;
-
-  
 
   m_data =0;
 
@@ -233,14 +223,12 @@ UdpEchoClient::SetDataSize (uint32_t dataSize)
 uint32_t 
 UdpEchoClient::GetDataSize (void) const
 {
-  // NS_LOG_FUNCTION (this);
   return m_size;
 }
 
 void 
 UdpEchoClient::SetFill (std::string fill)
 {
-  // NS_LOG_FUNCTION (this << fill);
 
   uint32_t dataSize = fill.size () + 1;
 
@@ -262,7 +250,6 @@ UdpEchoClient::SetFill (std::string fill)
 void 
 UdpEchoClient::SetFill (uint8_t fill, uint32_t dataSize)
 {
-  // NS_LOG_FUNCTION (this << fill << dataSize);
   if (dataSize != m_dataSize)
     {
       delete [] m_data;
@@ -281,7 +268,6 @@ UdpEchoClient::SetFill (uint8_t fill, uint32_t dataSize)
 void 
 UdpEchoClient::SetFill (uint8_t *fill, uint32_t fillSize, uint32_t dataSize)
 {
-  // NS_LOG_FUNCTION (this << fill << fillSize << dataSize);
   if (dataSize != m_dataSize)
     {
       delete [] m_data;
@@ -320,7 +306,6 @@ UdpEchoClient::SetFill (uint8_t *fill, uint32_t fillSize, uint32_t dataSize)
 void 
 UdpEchoClient::ScheduleTransmit (Time dt)
 {
-  // NS_LOG_FUNCTION (this << dt);
   m_sendEvent = Simulator::Schedule (dt, &UdpEchoClient::Send, this);
 }
 
@@ -336,8 +321,6 @@ UdpEchoClient::set_low_entropy(uint8_t *payload_arr)
 void 
 UdpEchoClient::Send (void)
 {
-  // NS_LOG_FUNCTION (this);
-
   NS_ASSERT (m_sendEvent.IsExpired ());
 
   Ptr<Packet> p;
@@ -435,7 +418,6 @@ UdpEchoClient::Send (void)
 void
 UdpEchoClient::HandleRead (Ptr<Socket> socket)
 {
-  // NS_LOG_FUNCTION (this << socket);
   Ptr<Packet> packet;
   Address from;
   Address localAddress;

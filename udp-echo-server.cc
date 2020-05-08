@@ -70,7 +70,6 @@ UdpEchoServer::GetTypeId (void)
 
 UdpEchoServer::UdpEchoServer ()
 {
-  // NS_LOG_FUNCTION (this);
   m_rec = 0;
   m_count = 0;
   m_logging = 0;
@@ -90,7 +89,6 @@ UdpEchoServer::UdpEchoServer ()
 
 UdpEchoServer::~UdpEchoServer()
 {
-  // NS_LOG_FUNCTION (this);
   m_socket = 0;
   m_socket6 = 0;
 }
@@ -98,14 +96,12 @@ UdpEchoServer::~UdpEchoServer()
 void
 UdpEchoServer::DoDispose (void)
 {
-  // NS_LOG_FUNCTION (this);
   Application::DoDispose ();
 }
 
 void 
 UdpEchoServer::StartApplication (void)
 {
-  // NS_LOG_FUNCTION (this);
 
   if (m_socket == 0)
     {
@@ -162,7 +158,6 @@ UdpEchoServer::StartApplication (void)
 void 
 UdpEchoServer::StopApplication ()
 {
-  // NS_LOG_FUNCTION (this);
 
   if (m_socket != 0) 
     {
@@ -179,7 +174,6 @@ UdpEchoServer::StopApplication ()
 void 
 UdpEchoServer::HandleRead (Ptr<Socket> socket)
 {
-  // NS_LOG_FUNCTION (this << socket);
 
   Ptr<Packet> packet;
   Address from;
@@ -197,24 +191,13 @@ UdpEchoServer::HandleRead (Ptr<Socket> socket)
      m_rec++;
     if(m_rec == 1){
       low_ent_start = Simulator::Now().GetMilliSeconds();
-      // NS_LOG_INFO("Low Entropy Start ---> " << low_ent_start << "Packet Number ---> " << m_rec);
     }
     if(m_rec == (m_count/2)){
       low_ent_end = Simulator::Now().GetMilliSeconds();
-      // NS_LOG_INFO("Low Entropy End ---> " << low_ent_end << "Packet Number ---> " << m_rec);
-
     }
     if(m_rec == ((m_count/2)+1)){
       high_ent_start = Simulator::Now().GetMilliSeconds();
-      // NS_LOG_INFO("High Entropy Start ---> " << high_ent_start << "Packet Number ---> " << m_rec);
     }
-    
-
-
-
-
-
-
 
       if (InetSocketAddress::IsMatchingType (from))
         {
@@ -253,15 +236,11 @@ UdpEchoServer::HandleRead (Ptr<Socket> socket)
     }
     if(m_rec == m_count){
         high_ent_end = Simulator::Now().GetMilliSeconds();
-        // NS_LOG_INFO("High Entropy End ---> " << high_ent_end << "Packet Number ---> " << m_rec);
         //difference calculation
         difference_low = low_ent_end - low_ent_start;
-        // NS_LOG_INFO(" Low Difference ---> " << difference_low);
-
         difference_high = high_ent_end - high_ent_start;
-        // NS_LOG_INFO(" High Difference ---> " << difference_high);
-
         difference = difference_high - difference_low;
+        
         NS_LOG_INFO("High and Low Packet Train Difference ---> " << difference << "ms.");
         if(difference > 100){
           NS_LOG_INFO("-------------------\nCOMPRESSION DETECTED\n-------------------");

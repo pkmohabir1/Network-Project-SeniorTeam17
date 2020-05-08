@@ -82,10 +82,7 @@ private:
   int64_t difference_low;
   int64_t difference_high;
   int64_t difference;
-  uint16_t m_logging;
-        
-
-        
+  uint16_t m_logging;  
 
   /// Callbacks for tracing the packet Rx events
   TracedCallback<Ptr<const Packet> > m_rxTrace;

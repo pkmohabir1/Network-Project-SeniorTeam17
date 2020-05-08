@@ -280,8 +280,7 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
 
       std::cout << "Testing Configurations: \n\n";
       print_map(testing_map);
-      //std::cout <<"_______________________________________________________________________\n";
-        std::cout << "\n";
+      std::cout << "\n";
       std::cout << "To update a test configuration enter [YES], [RUN] for Simulation, [TEST] for Test Cases\n";
       std::cout << "Enter [YES]/[RUN]/[TEST]: ";
       std::cin >> update_menu;
@@ -293,7 +292,7 @@ void display_update_test_config(std::map<std::string, std::string> &testing_map)
         std::cout << "PLEASE enter [YES] to update Test configuration(s) or [RUN] for Simulation [TEST] for Test Cases" << "\n";
         std::cout << "Enter [YES]/[RUN]/[TEST]: ";
         std::cin >> update_menu;
-	std::cout << "\n";	
+	      std::cout << "\n";	
         std::transform(update_menu.begin(), update_menu.end(),update_menu.begin(), tolower);
       }
     } 
@@ -374,9 +373,6 @@ void display_debug_info() {
     debug = true;
   }
   std::cout << "\n";
-
-
-
 }
 
 
@@ -422,35 +418,16 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
 
    int inter_measurement_time = std::stoi(testingMap.at("inter_measurement_time"), nullptr, 10);
 
-    // int inter_measurement_time =5;
-    // NS_LOG_INFO("Setting nPackets");
-
     uint32_t nPackets = std::stoi(testingMap.at("num_udp_packets")) * 2;
 
-    // uint32_t nPackets = 9*2;
-
-    // Time::SetResolution (Time::NS);
     LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
     LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
-    if(!log_flag){
-      // LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
-      // LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
-    }
-
-    // if (debug == true) {
-    //   LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_FUNCTION);
-    //   LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_FUNCTION);
-    // } else {
-    //   LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
-    //   LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
-    // }
 
      NS_LOG_INFO ("Creating nodes...");
      NodeContainer nodes;
     
      nodes.Create (4);
    
-
     PointToPointHelper pointToPoint;
 
 
@@ -519,8 +496,6 @@ void run_simulator(std::map<std::string, std::string> &testingMap, bool compress
     clientApps.Start(Seconds (2.0));
     clientApps.Stop(Seconds (55.0));
    
-
-
 //____________________________end_____________________________________________
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
@@ -562,16 +537,12 @@ bool rerun_sim() {
     rerun = false;
   }
   std::cout << "\n";
-  // std::cin.clear();
-  // fflush(stdin);
   return rerun;
 }
 
 
 
 using namespace ns3;
-
-// NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
 
 int
 main (int argc, char *argv[])
@@ -585,50 +556,21 @@ main (int argc, char *argv[])
   bool rerun = true;
   while (rerun) {
     print_menu(testingMap);
-    // AsciiTraceHelper ascii;
   
     if((run_sim == true) && (run_tests == false)){
       run_simulator(testingMap, false, false);
-      // return 0;
     }
 
+    // Four test cases
     if ((run_sim == false) && (run_tests == true)) {
-      // NS_LOG_INFO("Running No Compressing/Short Distance Test...");
       run_simulator(testingMap, false, false);
-      // NS_LOG_INFO( "Running No Compressing/Long Distance Test...");
       run_simulator(testingMap, false, true);
-      // NS_LOG_INFO( "Running Has Compressing/Short Distance Test...");
       run_simulator(testingMap, true, false);
-      // NS_LOG_INFO( "Running Has Compressing/Long Distance Test...");
       run_simulator(testingMap, true, true);
     }
     rerun = rerun_sim();
     run_sim = false;
     run_tests = false;
-    // std::cin.clear();
-    // fflush(stdin);
   }
-  // print_menu(testingMap);
-  // // AsciiTraceHelper ascii;
-
-  // Time::SetResolution (Time::NS);
- 
-  // if((run_sim == true) && (run_tests == false)){
-  //   run_simulator(testingMap, false, false);
-  //   return 0;
-  // }
-
-  // if ((run_sim == false) && (run_tests == true)) {
-  //   // NS_LOG_INFO("Running No Compressing/Short Distance Test...");
-  //   run_simulator(testingMap, false, false);
-  //   // NS_LOG_INFO( "Running No Compressing/Long Distance Test...");
-  //   run_simulator(testingMap, false, true);
-  //   // NS_LOG_INFO( "Running Has Compressing/Short Distance Test...");
-  //   run_simulator(testingMap, true, false);
-  //   // NS_LOG_INFO( "Running Has Compressing/Long Distance Test...");
-  //   run_simulator(testingMap, true, true);
-  // }
-  
-
   return 0;
 }
