@@ -10,7 +10,7 @@ This project aims to increase the security measures between network endpoints to
 ## To Build
 1. [Download and install NS3 according to the guide found here](https://www.nsnam.org/docs/release/3.30/tutorial/html/getting-started.html)
 2. Clone the Git repository into the top-level NS-3 directory (should be either ````ns-3.30.1```` or ```ns-3-dev``` depending on how NS-3 was installed)
-3. Run ````./install.sh```` located in the ```team17``` directory
+3. Run ````./install.sh```` located in the ```team17``` directory (may have to do ```chmod +x ./install.sh``` before running)
 4. Rebuild NS3 by going back to the top-level NS-3 directory and running ````./waf````
 
 ## To Run
